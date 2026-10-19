@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Last Wave | Liberia Beach Festival</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0a1633;--deep:#1c3f9e;--sea:#27a9e1;--sun:#ffb81c;--sand:#fff7e6;--bad:#c0392b}
+*{box-sizing:border-box}body{margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--ink);background:var(--sand);line-height:1.5}
+a{color:inherit}button,input,select{font:inherit}
+nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:1rem;padding:.6rem 1.2rem;background:var(--ink);color:#fff;flex-wrap:wrap}
+nav img{height:44px;border-radius:6px;background:#fff}nav .sp{flex:1}nav a{text-decoration:none;cursor:pointer;font-weight:600}
+.btn{display:inline-block;border:0;border-radius:999px;padding:.7rem 1.5rem;font-weight:800;background:var(--sun);color:var(--ink);cursor:pointer;text-decoration:none}
+.btn.alt{background:transparent;color:#fff;border:2px solid #fff}.btn:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--sea);outline-offset:2px}
+.test{background:var(--sun);text-align:center;padding:.35rem;font-weight:600;font-size:.9rem}
+.hero{position:relative;min-height:78vh;display:grid;place-items:center;text-align:center;color:#fff;background:linear-gradient(#0a1633cc,#1c3f9e99),url(crowd.jpg) center/cover;padding:2rem}
+.hero img{width:min(640px,88vw);background:#fff;border-radius:24px;padding:.5rem}
+.hero h1{font-size:clamp(2rem,6vw,4rem);margin:.6rem 0 0;font-weight:800;line-height:1.05}.hero p{max-width:48ch;margin:.8rem auto 1.4rem;font-size:1.15rem}
+section{max-width:1050px;margin:auto;padding:3rem 1.2rem}h2{font-size:2.2rem;margin:0 0 1rem;font-weight:800;color:var(--deep)}
+.grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.card{background:#fff;border-radius:18px;padding:1.2rem;border:2px solid var(--ink)}.card h3{margin:.1rem 0}
+.price{font-size:2rem;font-weight:800;color:var(--deep)}.qty{display:flex;align-items:center;gap:.6rem;margin-top:.8rem}
+.qty button{width:38px;height:38px;border-radius:50%;border:2px solid var(--ink);background:#fff;font-weight:800;cursor:pointer}
+.wave{background:var(--deep);color:#fff}.wave h2{color:var(--sun)}
+.cities{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.cities div{background:#ffffff1f;border-radius:14px;padding:1rem}
+.form{max-width:440px;margin:2rem auto;background:#fff;border:2px solid var(--ink);border-radius:20px;padding:1.5rem}
+label{display:block;font-weight:600;margin-top:.9rem}input,select{width:100%;padding:.7rem;border:2px solid var(--ink);border-radius:10px;background:#fff}
+.auth{display:grid;grid-template-columns:1fr 1fr;min-height:72vh}.auth .aside{background:linear-gradient(#0a1633d9,#1c3f9ebf),url(crowd.jpg) center/cover;color:#fff;display:grid;place-items:center;text-align:center;padding:2rem}
+.auth .aside img{background:#fff;border-radius:18px;padding:.4rem;max-width:100%;height:auto}.auth .form{width:calc(100% - 2rem)}label.chk{display:flex;gap:.5rem;align-items:center;font-weight:400}input[type=checkbox]{width:auto}
+@media(max-width:760px){.auth{grid-template-columns:1fr}.auth .aside{display:none}}
+.err{color:var(--bad);font-weight:600;margin-top:.8rem}.ok{background:#e6f7ec;border:2px solid #1d8348;border-radius:14px;padding:1rem;margin:.6rem 0}
+.tabs{display:flex;gap:.5rem;margin-top:.5rem}.tabs button{flex:1;padding:.6rem;border-radius:10px;border:2px solid var(--ink);background:#fff;font-weight:600;cursor:pointer}.tabs .on{background:var(--ink);color:#fff}
+.hint{font-size:.85rem;opacity:.75}footer{background:var(--ink);color:#fff;text-align:center;padding:2rem 1rem}
+.big{font-size:1.6rem;font-weight:800;border-radius:14px;padding:1rem;margin-top:1rem;border:3px solid var(--ink)}.g{background:#d5f5e3}.y{background:#fff3c4}.r{background:#fadbd8}.b{background:#d6eaf8}
+.code{font-family:monospace;background:var(--sand);padding:.15rem .5rem;border-radius:6px;margin:.15rem;display:inline-block}
+</style></head><body>
+<div class="test">TEST MODE: no real money is charged. Tickets created here are not valid for entry.</div>
+<nav><a href="#/"><img src="logo.jpg" alt="The Last Wave"></a><span class="sp"></span>
+<a href="#/">Home</a><a href="#/tickets">Tickets</a><span id="auth"></span></nav>
+<main id="app"></main>
+<footer>The Last Wave, Liberia. Placeholder venue and date: edit in public/index.html.<br><a href="#/admin" class="hint">Staff gate</a> <span class="hint">| Design inspired by tidalravefestival.com</span></footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),app=$('#app');let cfg,cart={},tok=localStorage.lw_tok,me=JSON.parse(localStorage.lw_me||'null'),pm='momo';
+const api=async(p,body)=>{let r;try{r=await fetch('/api'+p,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(tok||'')},body:body&&JSON.stringify(body)})}catch{throw new Error("Can't reach the server. Start it with: node server.js, then open http://localhost:3000 (not the HTML file).")}
+ const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Something went wrong. Please try again.');return j};
+const money=n=>'$'+n.toFixed(2),total=()=>cfg.tickets.reduce((s,t)=>s+t.price*(cart[t.id]||0),0);
+const setUser=(t,u)=>{tok=t;me=u;t?(localStorage.lw_tok=t,localStorage.lw_me=JSON.stringify(u)):(localStorage.removeItem('lw_tok'),localStorage.removeItem('lw_me'));nav()};
+function nav(){$('#auth').innerHTML=me?`<a href="#/orders">My tickets</a> <a id="out">Log out (${me.name.split(' ')[0]})</a>`:`<a href="#/login">Log in</a> <a class="btn" href="#/signup">Sign up</a>`;
+ const o=$('#out');if(o)o.onclick=()=>{setUser(null);location.hash='#/'}}
+function ticketCards(){return cfg.tickets.map(t=>`<div class="card"><h3>${t.name}</h3><div class="price">${money(t.price)}</div><p>${t.perks}</p>
+ <div class="qty"><button aria-label="Fewer ${t.name}" data-d="-1" data-id="${t.id}">-</button><b id="q-${t.id}">${cart[t.id]||0}</b><button aria-label="More ${t.name}" data-d="1" data-id="${t.id}">+</button></div></div>`).join('')}
+function bindQty(){app.querySelectorAll('.qty button').forEach(b=>b.onclick=()=>{const id=b.dataset.id;cart[id]=Math.max(0,Math.min(10,(cart[id]||0)+ +b.dataset.d));$('#q-'+id).textContent=cart[id];$('#tot')&&($('#tot').textContent=money(total()))})}
+const routes={
+'/':()=>{app.innerHTML=`<div class="hero"><div><img src="logo.jpg" alt="The Last Wave"><h1>The beach is calling. Answer it.</h1><p>One night of music, beach fashion, food and games on the Liberian coast. Come for the sunset, stay for the last wave.</p><a class="btn" href="#/tickets">Get tickets</a></div></div>
+<section><h2>What's on</h2><div class="grid"><div class="card"><h3>Live music</h3><p>Headline sets from Liberian and West African artists on the main beach stage.</p></div><div class="card"><h3>Beach fashion</h3><p>Swimwear, prints and crochet. Dress for sand and sea.</p></div><div class="card"><h3>Food and games</h3><p>Local food market, beach volleyball and tournaments until the music starts.</p></div></div></section>
+<div class="wave"><section><h2>Event details</h2><div class="cities"><div><b>Date</b><br>Saturday, 19 December 2026 (placeholder)</div><div><b>Venue</b><br>Monrovia coastline (placeholder)</div><div><b>Doors</b><br>2:00 PM. Music from 5:00 PM.</div><div><b>Pay with</b><br>Orange Money, MTN MoMo or bank transfer</div></div></section></div>`},
+'/tickets':()=>{app.innerHTML=`<section><h2>Tickets</h2><div class="grid">${ticketCards()}</div><p style="margin-top:1.5rem"><b>Total: <span id="tot">${money(total())}</span></b> <a class="btn" href="#/checkout" style="margin-left:1rem">Checkout</a></p></section>`;bindQty()},
+'/signup':()=>form('Create your account','signup',`<label>Full name<input name="name" autocomplete="name"></label>`,'Sign up',`Already have an account? <a href="#/login">Log in</a>`),
+'/login':()=>form('Welcome back','login','','Log in',`New here? <a href="#/signup">Create an account</a>`),
+'/checkout':()=>{if(!me){sessionStorage.next='#/checkout';location.hash='#/login';return}
+ if(!total()){location.hash='#/tickets';return}
+ const mm=Object.entries(cfg.momo).map(([k,v])=>`<option value="${k}">${v}</option>`).join(''),bk=cfg.banks.map(b=>`<option>${b}</option>`).join('');
+ app.innerHTML=`<div class="form" style="max-width:520px"><h2>Pay ${money(total())}</h2><div class="tabs"><button id="t-momo">Mobile money</button><button id="t-bank">Bank</button></div><div id="pf"></div><div class="err" id="e" role="alert"></div></div>`;
+ const draw=()=>{$('#t-momo').className=pm=='momo'?'on':'';$('#t-bank').className=pm=='bank'?'on':'';
+  $('#pf').innerHTML=pm=='momo'?`<label>Provider<select id="prov">${mm}</select></label><label>Mobile number<input id="phone" inputmode="numeric" placeholder="0770123456"></label><label>PIN<input id="pin" type="password" inputmode="numeric"></label><p class="hint">Test: PIN 1234 approves. Numbers ending 0000 are declined.</p>`
+  :`<label>Bank<select id="bank">${bk}</select></label><label>Account number<input id="acct" inputmode="numeric" placeholder="10 digits"></label><label>OTP<input id="otp" inputmode="numeric"></label><p class="hint">Test: any 10-digit account, OTP 123456 approves.</p>`;
+  $('#pf').insertAdjacentHTML('beforeend','<p><button class="btn" id="go">Pay now (test)</button></p>');
+  $('#go').onclick=async()=>{$('#e').textContent='';$('#go').disabled=true;
+   const items=Object.entries(cart).map(([id,qty])=>({id,qty})),body=pm=='momo'?{method:'momo',provider:$('#prov').value,phone:$('#phone').value,pin:$('#pin').value}:{method:'bank',bank:$('#bank').value,account:$('#acct').value,otp:$('#otp').value};
+   try{const o=await api('/checkout',{items,...body});cart={};sessionStorage.last=o.id;location.hash='#/orders'}catch(x){$('#e').textContent=x.message;$('#go').disabled=false}}};
+ $('#t-momo').onclick=()=>{pm='momo';draw()};$('#t-bank').onclick=()=>{pm='bank';draw()};draw()},
+'/admin':()=>{app.innerHTML=`<div class="form" style="max-width:560px"><h2>Gate check-in</h2><label>Staff key<input id="key" type="password" value="${sessionStorage.lwk||''}"></label><label>Ticket code<input id="code" placeholder="LW-XXXXXXXX" autocapitalize="characters" autocomplete="off"></label>
+ <p><button class="btn" id="adm">Check in</button> <button class="btn" id="look" style="background:var(--sea)">Look up only</button> <button class="btn" id="cam" style="background:var(--ink);color:#fff">Scan QR</button></p>
+ <video id="vid" playsinline muted style="width:100%;display:none;border-radius:12px"></video><div id="res" role="status"></div><p class="hint" id="st"></p></div>`;
+ const call=async(p,b)=>{const r=await fetch('/api/admin'+p,{method:b?'POST':'GET',headers:{'Content-Type':'application/json','X-Admin-Key':$('#key').value},body:b&&JSON.stringify(b)});const j=await r.json();if(!r.ok)throw new Error(j.error);return j};
+ const stats=async()=>{try{const s=await call('/stats');sessionStorage.lwk=$('#key').value;$('#st').textContent=`Sold ${s.sold} | Admitted ${s.admitted} | Not yet in ${s.remaining}`}catch{}};
+ const run=async admit=>{const code=$('#code').value;if(!code.trim())return;try{const r=await call('/scan',{code,admit});const m={admitted:['g','ADMIT: checked in'],valid:['b','VALID: not yet used'],used:['y','ALREADY USED at '+new Date(r.usedAt).toLocaleTimeString()],invalid:['r','NOT FOUND: do not admit']}[r.status];
+  $('#res').innerHTML=`<div class="big ${m[0]}">${m[1]}${r.ticket?`<div style="font-size:1rem;font-weight:600">${r.ticket} | ${r.holder} | ${r.code}</div>`:''}</div>`;stats()}catch(x){$('#res').innerHTML=`<div class="big r">${x.message}</div>`}};
+ $('#adm').onclick=()=>run(true);$('#look').onclick=()=>run(false);$('#code').onkeydown=e=>e.key=='Enter'&&run(true);
+ let stream;$('#cam').onclick=async()=>{if(!('BarcodeDetector' in window)){$('#res').innerHTML='<div class="big y">Camera scanning needs Chrome on Android or desktop. Type the code instead.</div>';return}
+  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});const v=$('#vid');v.srcObject=stream;v.style.display='block';await v.play();const d=new BarcodeDetector({formats:['qr_code']});
+   const tick=async()=>{if(!stream.active)return;try{const f=await d.detect(v);if(f.length){$('#code').value=f[0].rawValue;stream.getTracks().forEach(t=>t.stop());v.style.display='none';run(true);return}}catch{}setTimeout(tick,300)};tick()}catch{$('#res').innerHTML='<div class="big y">Camera blocked. Allow camera access or type the code.</div>'}};
+ stats()},
+'/orders':async()=>{if(!me){location.hash='#/login';return}app.innerHTML='<section><h2>My tickets</h2><p>Loading...</p></section>';
+ try{const os=(await api('/orders')).reverse();app.innerHTML=`<section><h2>My tickets</h2>${os.length?os.map(o=>`<div class="${o.id==sessionStorage.last?'ok':'card'}" style="margin:.8rem 0"><b>${o.id}</b> paid ${money(o.total)} via ${o.method} <span class="hint">(test)</span>${o.lines.map(l=>`<div>${l.qty} x ${l.name}: <div style="display:flex;flex-wrap:wrap;gap:.8rem">${l.codes.map(c=>`<div class="${l.used&&l.used[c]?'hint':''}"><div class="qr" data-c="${c}"></div><span class="code">${c}</span></div>`).join('')}</div></div>`).join('')}</div>`).join(''):'<p>No tickets yet. <a href="#/tickets">Browse tickets</a></p>'}</section>`;app.querySelectorAll('.qr').forEach(e=>{try{new QRCode(e,{text:e.dataset.c,width:96,height:96})}catch{}})}
+ catch(x){setUser(null);location.hash='#/login'}}};
+function form(title,kind,extra,btn,foot){if(me){location.hash='#/tickets';return}
+ const login=kind=='login';
+ app.innerHTML=`<div class="auth"><div class="aside"><div><img src="logo.jpg" alt="The Last Wave" width="260"><p>${login?'Log in to see your tickets and check out faster.':'Create an account to buy tickets and keep your entry codes in one place.'}</p></div></div>
+ <form class="form" id="f" novalidate><h2>${title}</h2>${extra}<label>Email<input name="email" type="email" autocomplete="email" inputmode="email"></label>
+ <label>Password<input name="password" id="pw" type="password" autocomplete="${login?'current-password':'new-password'}"></label>
+ ${login?'':'<p class="hint">At least 8 characters.</p>'}<label class="chk"><input type="checkbox" id="show"> Show password</label>
+ <p><button class="btn" id="sub" type="submit" style="width:100%">${btn}</button></p><div class="err" id="e" role="alert" aria-live="polite"></div><p>${foot}</p></form></div>`;
+ const f=$('#f'),fail=(m,el)=>{$('#e').textContent=m;el&&el.focus()};
+ $('#show').onchange=e=>$('#pw').type=e.target.checked?'text':'password';
+ f.onsubmit=async e=>{e.preventDefault();$('#e').textContent='';
+  const g=n=>f.elements[n],b={email:g('email').value.trim(),password:g('password').value};
+  if(!login){b.name=g('name').value.trim();if(!b.name)return fail('Enter your full name.',g('name'))}
+  if(!/^\S+@\S+\.\S+$/.test(b.email))return fail('Enter a valid email address.',g('email'));
+  if(!b.password)return fail('Enter your password.',g('password'));
+  if(!login&&b.password.length<8)return fail('Password must be at least 8 characters.',g('password'));
+  const s=$('#sub'),t=s.textContent;s.disabled=true;s.textContent='Please wait...';
+  try{const r=await api('/'+kind,b);setUser(r.token,r.user);const n=sessionStorage.next;sessionStorage.removeItem('next');location.hash=n||'#/tickets'}
+  catch(x){fail(x.message);s.disabled=false;s.textContent=t}}}
+async function route(){const r=location.hash.slice(1)||'/';scrollTo(0,0);await (routes[r]||routes['/'])()}
+addEventListener('hashchange',route);
+if(location.protocol=='file:')app.innerHTML='<div class="form"><h2>Start the server</h2><p>This page must be opened through the backend. Run <b>node server.js</b> in the project folder, then visit <b>http://localhost:3000</b>.</p></div>';
+else fetch('/api/config').then(r=>r.json()).then(c=>{cfg=c;nav();route()}).catch(()=>{app.innerHTML='<div class="form"><h2>Server not reachable</h2><p>Make sure <b>node server.js</b> is running, then refresh.</p></div>'});
+</script></body></html>
