@@ -44,7 +44,7 @@ const send = (res, c, o) => { res.writeHead(c, { 'Content-Type': 'application/js
 http.createServer((req, res) => {
   const url = new URL(req.url, 'http://x');
   if (!url.pathname.startsWith('/api/')) { // static files
-    const f = path.join(__dirname, 'public', url.pathname === '/' ? 'index.html' : url.pathname);
+    const f = path.join(__dirname, url.pathname === '/' ? 'index.html' : url.pathname);
     if (!f.startsWith(path.join(__dirname, 'public')) || !fs.existsSync(f)) { res.writeHead(404); return res.end('Not found'); }
     res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' });
     return fs.createReadStream(f).pipe(res);
